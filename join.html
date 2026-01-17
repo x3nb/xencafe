@@ -171,9 +171,8 @@
     document.addEventListener('DOMContentLoaded', () => {
       console.log('DOM loaded, initializing...');
 
-      const supabaseUrl = 'https://mtkujqqzddyxtjeszuzz.supabase.co'; // Replace with your Supabase URL
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10a3VqcXF6ZGR5eHRqZXN6dXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjU4NDMsImV4cCI6MjA4NDIwMTg0M30.bImNbkfZkrfZJhCLlfKTxg8-RQUZWTfZovwN0z3aQjE'; // Replace with your anon key
-
+      const supabaseUrl = 'https://mtkujqqzddyxtjeszuzz.supabase.co'; 
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10a3VqcXF6ZGR5eHRqZXN6dXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjU4NDMsImV4cCI6MjA4NDIwMTg0M30.bImNbkfZkrfZJhCLlfKTxg8-RQUZWTfZovwN0z3aQjE'; 
       if (supabaseUrl.includes('YOUR') || supabaseKey.includes('YOUR')) {
         alert('Please replace the Supabase URL and key placeholders in the code.');
         return;
