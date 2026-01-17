@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <title>My Punky Community</title>
 <!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet" />
 
 <style>
   body {
@@ -115,7 +115,7 @@
     border-color: #00f;
   }
 
-  /* Chat header and greeting */
+  /* Chat header and loading */
   .chat-header {
     font-family: 'Vast Shadow', cursive;
     font-size: 16px;
@@ -135,7 +135,7 @@
     50% { opacity: 0.4; }
   }
 
-  /* Greet message with violet ombré and rose-red */
+  /* Greet message style */
   .greet {
     font-family: 'Vast Shadow', cursive;
     font-size: 18px;
@@ -145,7 +145,7 @@
     margin-top: 10px;
   }
 
-  /* Style for synopsis display */
+  /* Synopsis box style */
   #synopsis {
     margin-top: 15px;
     font-family: 'Press Start 2P', cursive;
@@ -165,19 +165,18 @@
 <!-- Floating shapes background -->
 <div class="background-shapes" id="shapes"></div>
 
-<!-- Main container -->
+<!-- Main content -->
 <div class="container">
-
-  <!-- Avatar with glow -->
+  <!-- Avatar -->
   <div id="user-avatar"></div>
 
-  <!-- Sign Up / Log In Buttons -->
+  <!-- Auth Buttons -->
   <div id="auth-buttons">
     <button onclick="showSignUp()">Sign Up</button>
     <button onclick="showSignIn()">Log In</button>
   </div>
 
-  <!-- Login/Signup form -->
+  <!-- Auth Form -->
   <div class="paper" id="auth-form" style="display:none;">
     <h2 style="font-family:'Vast Shadow', cursive;">Welcome to the Punk Tribe</h2>
     <input type="email" id="auth-email" placeholder="Email" style="margin:10px; padding:10px; font-family:'Press Start 2P';" /><br>
@@ -186,19 +185,16 @@
     <button onclick="cancelAuth()">Cancel</button>
   </div>
 
-  <!-- Content after login -->
+  <!-- Main Content (hidden initially) -->
   <div class="paper" id="main-content" style="display:none;">
-    <!-- Greeting with loading -->
     <div class="chat-header" id="chat-header">Loading...</div>
     <div class="loading" id="loading-indicator">Connecting to the punk chat...</div>
     <div id="chat" class="greet"></div>
-
     <!-- Menu -->
     <div class="menu" id="menu"></div>
     <!-- Synopsis display -->
     <div id="synopsis"></div>
   </div>
-
 </div>
 
 <script>
@@ -220,11 +216,11 @@
     }
 
     // Initialize Supabase
-    const supabaseUrl = 'https://mtkujqqzddyxtjeszuzz.supabase.co'; // your project URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10a3VqcXF6ZGR5eHRqZXN6dXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjU4NDMsImV4cCI6MjA4NDIwMTg0M30.bImNbkfZkrfZJhCLlfKTxg8-RQUZWTfZovwN0z3aQjE'; // your actual key
+    const supabaseUrl = 'https://mtkujqqzddyxtjeszuzz.supabase.co'; // Replace with your URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10a3VqcXF6ZGR5eHRqZXN6dXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjU4NDMsImV4cCI6MjA4NDIwMTg0M30.bImNbkfZkrfZJhCLlfKTxg8-RQUZWTfZovwN0z3aQjE'; // Replace with your key
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Show auth forms
+    // Show Sign Up / Sign In
     window.showSignUp = () => {
       document.getElementById('auth-form').style.display = 'block';
       document.getElementById('auth-buttons').style.display = 'none';
@@ -238,32 +234,37 @@
       document.getElementById('auth-buttons').style.display = 'block';
     };
 
-    // Sign in / Sign up logic
+    // Sign in / Sign up
     window.submitAuth = async () => {
       const email = document.getElementById('auth-email').value;
       const password = document.getElementById('auth-password').value;
-      try {
-        const { user, error } = await supabase.auth.signIn({ email, password });
-        if (error) {
-          // If signIn fails, try signUp
-          const { user: newUser, error: signUpError } = await supabase.auth.signUp({ email, password });
-          if (signUpError) {
-            alert(signUpError.message);
-            return;
-          } else {
-            currentUser = newUser;
-          }
-        } else {
-          currentUser = user;
-        }
-        document.getElementById('auth-form').style.display = 'none';
-        document.getElementById('auth-buttons').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        showGreeting();
-        loadProfileImage();
-      } catch (err) {
-        alert('Error: ' + err.message);
+      if (!email || !password) {
+        alert('Please enter email and password.');
+        return;
       }
+
+      // Try sign-in first
+      const { user, error } = await supabase.auth.signIn({ email, password });
+      if (error || !user) {
+        // If sign-in fails, try sign-up
+        const { user: newUser, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (signUpError) {
+          alert('Sign-up error: ' + signUpError.message);
+          return;
+        } else {
+          currentUser = newUser;
+        }
+      } else {
+        currentUser = user;
+      }
+
+      // Show main content
+      document.getElementById('auth-form').style.display = 'none';
+      document.getElementById('auth-buttons').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+
+      showGreeting();
+      loadProfileImage();
     };
 
     function loadProfileImage() {
@@ -285,7 +286,7 @@
       }, 1500);
     };
 
-    // Setup menu items
+    // Setup menu items with synopsis
     const menuItems = [
       {
         title: 'ABOUT',
