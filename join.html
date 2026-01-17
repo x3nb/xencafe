@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Punky Community Forum</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4B0082, #6495ED);
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 600px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #FFD700;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      background: white;
+      color: black;
+    }
+    button {
+      background: #6495ED;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #4B0082;
+    }
+    .hidden {
+      display: none;
+    }
+    .forum-thread {
+      margin: 20px 0;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+    }
+    .comment {
+      margin: 10px 0;
+      padding: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    .profiles {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    .profile {
+      text-align: center;
+      cursor: pointer;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+    }
+    .profile:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .message-options {
+      display: none;
+      margin-top: 10px;
+    }
+    .message-options button {
+      margin: 5px;
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Auth Section -->
+    <div id="auth-section">
+      <h1>Welcome to Punky Community</h1>
+      <button id="show-login">Log In</button>
+      <button id="show-register">Register</button>
+      <div id="auth-form" class="hidden">
+        <h2 id="form-title">Log In</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="submit-auth">Submit</button>
+        <button id="cancel-auth">Cancel</button>
+        <p id="auth-message"></p>
+      </div>
+    </div>
+
+    <!-- Forum Section -->
+    <div id="forum-section" class="hidden">
+      <h1>Forum</h1>
+      <div class="profiles">
+        <div class="profile" data-user="Alice">
+          <img src="https://via.placeholder.com/50" alt="Alice">
+          <p>Alice</p>
+          <button onclick="viewBio('Alice')">View Bio</button>
+          <button onclick="toggleMessage('Alice')">Message</button>
+          <div id="message-Alice" class="message-options">
+            <button onclick="sendMessage('Alice', 'Hey Alice, love your vibe!')">Hey Alice, love your vibe!</button>
+            <button onclick="sendMessage('Alice', 'Want to chat about tea?')">Want to chat about tea?</button>
+            <button onclick="sendMessage('Alice', 'What\'s your favorite season?')">What's your favorite season?</button>
+          </div>
+        </div>
+        <div class="profile" data-user="Bob">
+          <img src="https://via.placeholder.com/50" alt="Bob">
+          <p>Bob</p>
+          <button onclick="viewBio('Bob')">View Bio</button>
+          <button onclick="toggleMessage('Bob')">Message</button>
+          <div id="message-Bob" class="message-options">
+            <button onclick="sendMessage('Bob', 'Hey Bob, love your vibe!')">Hey Bob, love your vibe!</button>
+            <button onclick="sendMessage('Bob', 'Want to chat about tea?')">Want to chat about tea?</button>
+            <button onclick="sendMessage('Bob', 'What\'s your favorite season?')">What's your favorite season?</button>
+          </div>
+        </div>
+        <div class="profile" data-user="Charlie">
+          <img src="https://via.placeholder.com/50" alt="Charlie">
+          <p>Charlie</p>
+          <button onclick="viewBio('Charlie')">View Bio</button>
+          <button onclick="toggleMessage('Charlie')">Message</button>
+          <div id="message-Charlie" class="message-options">
+            <button onclick="sendMessage('Charlie', 'Hey Charlie, love your vibe!')">Hey Charlie, love your vibe!</button>
+            <button onclick="sendMessage('Charlie', 'Want to chat about tea?')">Want to chat about tea?</button>
+            <button onclick="sendMessage('Charlie', 'What\'s your favorite season?')">What's your favorite season?</button>
+          </div>
+        </div>
+      </div>
+      <div id="threads">
+        <div class="forum-thread">
+          <h3>What types of tea do you like?</h3>
+          <textarea id="comment-tea" placeholder="Add a comment..."></textarea>
+          <button onclick="postComment('tea')">Post</button>
+          <div id="comments-tea"></div>
+        </div>
+        <div class="forum-thread">
+          <h3>What's your favorite song?</h3>
+          <textarea id="comment-song" placeholder="Add a comment..."></textarea>
+          <button onclick="postComment('song')">Post</button>
+          <div id="comments-song"></div>
+        </div>
+        <div class="forum-thread">
+          <h3>What's your favorite Season and why?</h3>
+          <textarea id="comment-season" placeholder="Add a comment..."></textarea>
+          <button onclick="postComment('season')">Post</button>
+          <div id="comments-season"></div>
+        </div>
+      </div>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, initializing...');
+
+      const supabaseUrl = 'https://mtkujqqzddyxtjeszuzz.supabase.co'; // Replace with your Supabase URL
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10a3VqcXF6ZGR5eHRqZXN6dXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2MjU4NDMsImV4cCI6MjA4NDIwMTg0M30.bImNbkfZkrfZJhCLlfKTxg8-RQUZWTfZovwN0z3aQjE'; // Replace with your anon key
+
+      if (supabaseUrl.includes('YOUR') || supabaseKey.includes('YOUR')) {
+        alert('Please replace the Supabase URL and key placeholders in the code.');
+        return;
+      }
+
+      const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+      console.log('Supabase initialized.');
+
+      let currentUser = null;
+      let authMode = 'login'; // 'login' or 'register'
+
+      // Auth UI
+      document.getElementById('show-login').addEventListener('click', () => {
+        console.log('Show login clicked');
+        authMode = 'login';
+        document.getElementById('form-title').textContent = 'Log In';
+        document.getElementById('auth-form').classList.remove('hidden');
+        document.getElementById('auth-section').querySelectorAll('button:not(#submit-auth):not(#cancel-auth)').forEach(btn => btn.classList.add('hidden'));
+      });
+
+      document.getElementById('show-register').addEventListener('click', () => {
+        console.log('Show register clicked');
+        authMode = 'register';
+        document.getElementById('form-title').textContent = 'Register';
+        document.getElementById('auth-form').classList.remove('hidden');
+        document.getElementById('auth-section').querySelectorAll('button:not(#submit-auth):not(#cancel-auth)').forEach(btn => btn.classList.add('hidden'));
+      });
+
+      document.getElementById('cancel-auth').addEventListener('click', () => {
+        console.log('Cancel auth clicked');
+        document.getElementById('auth-form').classList.add('hidden');
+        document.getElementById('auth-section').querySelectorAll('button').forEach(btn => btn.classList.remove('hidden'));
+        document.getElementById('auth-message').textContent = '';
+      });
+
+      document.getElementById('submit-auth').addEventListener('click', async () => {
+        console.log('Submit auth clicked');
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        if (!email || !password) return alert('Please fill in all fields.');
+
+        try {
+          if (authMode === 'register') {
+            const { user, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            document.getElementById('auth-message').textContent = 'Congrats! Registration successful. Check your email for confirmation.';
+          } else {
+            const { user, error } = await supabase.auth.signIn({ email, password });
+            if (error) {
+              if (error.message.includes('Invalid login credentials')) {
+                alert('Wrong password. Please try again.');
+              } else {
+                throw error;
+              }
+              return;
+            }
+            currentUser = user;
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('forum-section').classList.remove('hidden');
+            loadComments();
+          }
+        } catch (error) {
+          alert('Error: ' + error.message);
+        }
+      });
+
+      // Forum Functions
+      window.postComment = async (thread) => {
+        if (!currentUser) return;
+        const content = document.getElementById(`comment-${thread}`).value;
+        if (!content) return alert('Please enter a comment.');
+        const { error } = await supabase.from('posts').insert([{ thread, content, user_email: currentUser.email }]);
+        if (error) alert('Error posting comment: ' + error.message);
+        else {
+          document.getElementById(`comment-${thread}`).value = '';
+          loadComments();
+        }
+      };
+
+      async function loadComments() {
+        const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+        if (error) return console.error(error);
+        ['tea', 'song', 'season'].forEach(thread => {
+          const container = document.getElementById(`comments-${thread}`);
+          container.innerHTML = '';
+          data.filter(post => post.thread === thread).forEach(post => {
+            const div = document.createElement('div');
+            div.className = 'comment';
+            div.textContent = `${post.user_email}: ${post.content}`;
+            container.appendChild(div);
+          });
+        });
+      }
+
+      window.viewBio = (user) => {
+        const bios = {
+          Alice: 'Alice loves punk rock and green tea.',
+          Bob: 'Bob is a musician who enjoys black tea.',
+          Charlie: 'Charlie prefers autumn and herbal teas.'
+        };
+        alert(bios[user]);
+      };
+
+      window.toggleMessage = (user) => {
+        const msgDiv = document.getElementById(`message-${user}`);
+        msgDiv.style.display = msgDiv.style.display === 'block' ? 'none' : 'block';
+      };
+
+      window.sendMessage = (user, message) => {
+        alert(`Message sent to ${user}: "${message}"`);
+        toggleMessage(user);
+      };
+
+      window.logout = () => {
+        supabase.auth.signOut();
+        currentUser = null;
+        document.getElementById('forum-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.remove('hidden');
+      };
+
+      // Check if user is already logged in
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          currentUser = session.user;
+          document.getElementById('auth-section').classList.add('hidden');
+          document.getElementById('forum-section').classList.remove('hidden');
+          loadComments();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
